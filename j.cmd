@@ -1,2 +1,2 @@
 cls
-javac Gebiet.java && java Main
+javac Gebiet.java && java -ea Main

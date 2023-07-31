@@ -1,70 +1,96 @@
-#include <algorithm>
-#include <iostream>
+#include <assert.h>
 #include <string>
-using std::string;
-#include <vector>
-#include <unordered_set>
-#include <set>
 
 class Gebiet {
     int plz;
-    string ort;
+    std::string ort;
 
 public:
 
-    Gebiet(int plz, string const& ort)
+    Gebiet(int plz, std::string const& ort)
     : plz(plz)
     , ort(ort) {
         // TODO validate constructor parameters
     }
 
-    int getPlz() const {
-        return plz;
-    }
-
-    string const& getOrt() const {
-        return ort;
+    friend bool operator==(Gebiet const& links, Gebiet const& rechts) {
+        return links.plz == rechts.plz
+            && links.ort == rechts.ort;
     }
 };
 
-std::ostream& operator<<(std::ostream& os, Gebiet const& gebiet) {
-    os << gebiet.getPlz() << " " << gebiet.getOrt();
-    return os;
+void zeiger() {
+    Gebiet* a = new Gebiet(33615, "Bielefeld");
+    Gebiet* b = new Gebiet(33615, "Bielefeld");
+
+    assert( a !=  b); // Gebiet*
+    assert(*a == *b); // Gebiet
+/*
+        +-------------+   +-------------+
+  links |  33615      |   |  33615      | rechts
+     *a | "Bielefeld" |   | "Bielefeld" | *b
+        +-------------+   +-------------+
+                  ^         ^
+                  |         |
+                +-|-+     +-|-+
+              a | ° +   b | ° |
+                +---+     +---+
+*/
+    delete(a);
+    a = b;
+    assert( a ==  b);
+    assert(*a == *b);
+/*
+                          +-------------+
+                    links |  33615      | rechts
+                       *a | "Bielefeld" | *b
+                  +-----> +-------------+
+                  |         ^
+                  |         |
+                +-|-+     +-|-+
+              a | ° +   b | ° |
+                +---+     +---+
+*/
+    delete(a);
+/*
+                  +----->
+                  |         ^
+                  |         |
+                +-|-+     +-|-+
+              a | ° +   b | ° |
+                +---+     +---+
+*/
 }
 
-bool operator==(Gebiet const& links, Gebiet const& rechts) {
-    return links.getPlz() == rechts.getPlz()
-        && links.getOrt() == rechts.getOrt();
+void objekte() {
+    Gebiet a(33615, "Bielefeld");
+    Gebiet b(33615, "Bielefeld");
+
+    assert(&a != &b);
+    assert( a ==  b);
+/*
+        +-------------+   +-------------+
+  links |  33615      |   |  33615      | rechts
+      a | "Bielefeld" |   | "Bielefeld" | b
+        +-------------+   +-------------+
+*/
+    a = b;
 }
 
-template <>
-struct std::hash<Gebiet> {
-    std::size_t operator()(Gebiet const& gebiet) const {
-        return gebiet.getPlz() * 31 + std::hash<string>()(gebiet.getOrt());
-    }
-};
+void werte() {
+    assert(42 == 42);
 
-bool operator<(Gebiet const& links, Gebiet const& rechts) {
-    if (links.getPlz() < rechts.getPlz()) return true;
-    if (rechts.getPlz() < links.getPlz()) return false;
-
-    return links.getOrt() < rechts.getOrt();
+    assert(Gebiet(33615, "Bielefeld") == Gebiet(33615, "Bielefeld"));
+/*
+        +-------------+   +-------------+
+  links |  33615      |   |  33615      | rechts
+        | "Bielefeld" |   | "Bielefeld" |
+        +-------------+   +-------------+
+*/
 }
 
 int main() {
-    std::vector<Gebiet> liste;
-    liste.emplace_back(33615, "Bielefeld");
-    std::cout << liste.front() << "\n";
-    auto it = std::find(liste.begin(), liste.end(), Gebiet { 33615, "Bielefeld" });
-    std::cout << (it != liste.end()) << "\n";
-
-    std::unordered_set<Gebiet> menge;
-    menge.emplace(33615, "Bielefeld");
-    std::cout << *menge.begin() << "\n";
-    std::cout << menge.contains({ 33615, "Bielefeld" }) << "\n";
-
-    std::set<Gebiet> baum;
-    baum.emplace(33615, "Bielefeld");
-    std::cout << *baum.begin() << "\n";
-    std::cout << baum.contains({ 33615, "Bielefeld" }) << "\n";
+    zeiger();
+    objekte();
+    werte();
 }
